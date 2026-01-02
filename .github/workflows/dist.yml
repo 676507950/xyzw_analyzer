@@ -1,4 +1,4 @@
-name: Build dist (Linux)
+name: Build dist (Linux Web Only)
 
 on:
   push:
@@ -8,22 +8,22 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
           go-version: "stable"
+          cache: true
 
       - run: go mod download
 
-      - name: Build Linux binary
+      - name: Build Linux web binary -> dist/
         run: |
           mkdir -p dist
-          GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/xyzw ./cmd/xyzw
+          GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/xyzw_web ./cmd/web
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dist-linux
-          path: dist/xyzw
+          name: dist-linux-web
+          path: dist/xyzw_web
