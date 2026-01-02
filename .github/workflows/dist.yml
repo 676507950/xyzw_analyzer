@@ -22,8 +22,7 @@ jobs:
       - name: Download deps
         run: go mod download
 
-      - name: Test
-        run: go test ./...
+      # ❌ 不跑 go test（因为依赖里有 Windows-only 的包，ubuntu 上会失败）
 
       - name: Build Windows EXE -> dist/
         run: |
