@@ -1,4 +1,4 @@
-name: Build dist (Windows EXE)
+name: Build dist (Linux)
 
 on:
   push:
@@ -6,36 +6,24 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows:
+  build-linux:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: "stable"
-          cache: true
 
-      - name: Download deps
-        run: go mod download
+      - run: go mod download
 
-      # ❌ 不跑 go test（因为依赖里有 Windows-only 的包，ubuntu 上会失败）
-
-      - name: Build Windows EXE -> dist/
+      - name: Build Linux binary
         run: |
           mkdir -p dist
-          GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/xyzw.exe ./cmd/xyzw
+          GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/xyzw ./cmd/xyzw
 
-      - name: Zip dist
-        run: |
-          cd dist
-          zip -r xyzw_windows_amd64.zip xyzw.exe
-
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: dist-windows
-          path: dist/xyzw_windows_amd64.zip
+          name: dist-linux
+          path: dist/xyzw
