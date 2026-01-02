@@ -1,4 +1,4 @@
-name: Build dist (Linux Web Only)
+name: Build dist (Linux Web Only - Static)
 
 on:
   push:
@@ -8,22 +8,28 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
           go-version: "stable"
           cache: true
 
-      - run: go mod download
+      - name: Download deps
+        run: go mod download
 
-      - name: Build Linux web binary -> dist/
+      - name: Build Linux web binary (static)
         run: |
           mkdir -p dist
-          GOOS=linux GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/xyzw_web ./cmd/web
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+            go build -trimpath -ldflags "-s -w" -o dist/xyzw_web ./cmd/web
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
         with:
           name: dist-linux-web
           path: dist/xyzw_web
