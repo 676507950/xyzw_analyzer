@@ -1,0 +1,42 @@
+name: Build dist (Windows EXE)
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+          cache: true
+
+      - name: Download deps
+        run: go mod download
+
+      - name: Test
+        run: go test ./...
+
+      - name: Build Windows EXE -> dist/
+        run: |
+          mkdir -p dist
+          GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-s -w" -o dist/xyzw.exe ./cmd/xyzw
+
+      - name: Zip dist
+        run: |
+          cd dist
+          zip -r xyzw_windows_amd64.zip xyzw.exe
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-windows
+          path: dist/xyzw_windows_amd64.zip
